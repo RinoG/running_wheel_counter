@@ -1,0 +1,3 @@
+[submodule "cpp_queue"]
+	path = cpp_queue
+	url = https://github.com/sg-0/cpp_queue

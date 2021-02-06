@@ -9,7 +9,8 @@
  * 
  *****************************************************************************/
 
-#include "cpp_queue/queue.h"
+#include "cpp_queue\queue.h"
+#include "cpp_queue\queue.cpp"
 
 #define MAX_MS_DELAY_WHEEL_0 5000u
 #define MAX_MS_DELAY_WHEEL_1 5000u
@@ -18,8 +19,8 @@
 #define MAX_MS_DELAY_WHEEL_4 5000u
 
 int resistor[5];
-const int encoder_input[5] = {A0, A1, A2, A3, A4};
-const int resistor_input[5][2] = {{2, 3}, {4, 5}, {6, 7}, {8, 9}, {10, 11}};
+const int encoder_input[5] = {1, 2, 3, 4, 5};
+const int resistor_input[5][2] = {{12, 11}, {7, 6}, {15, 16}, {25, 27}, {33, 35}};
 
 static unsigned long prev_time_ms[5] = {0};
 
@@ -34,8 +35,14 @@ Queue * timediff_queue_4;
  * @brief setup
  *****************************************************************************/
 void setup() {
+  timediff_queue_0 = new Queue();
+  timediff_queue_1 = new Queue();
+  timediff_queue_2 = new Queue();
+  timediff_queue_3 = new Queue();
+  timediff_queue_4 = new Queue();
+  
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(57600);
 
   for (int i = 0; i <= 4; i++) {
     // Initialize inputs from encoder (detect motor rotation)
@@ -61,30 +68,35 @@ void loop() {
   static long counter[5] = {0};
   /* is counter overflow ok? */
   
-  if(timediff_queue_0->getSize() > 0)
-    write_log(encoder_input[0],timediff_queue_0->dequeue, counter[0]++, get_resistor(resistor_input[0]))
+  if(timediff_queue_0->getSize() > 0) {
+    write_log(encoder_input[0],timediff_queue_0->dequeue(), counter[0]++, get_resistor(resistor_input[0]));
+  }
 
-  if(timediff_queue_1->getSize() > 0)
-    write_log(encoder_input[1],timediff_queue_1->dequeue, counter[1]++, get_resistor(resistor_input[1]))
+  if(timediff_queue_1->getSize() > 0) {
+    write_log(encoder_input[1],timediff_queue_1->dequeue(), counter[1]++, get_resistor(resistor_input[1]));
+  }
 
-  if(timediff_queue_2->getSize() > 0)
-    write_log(encoder_input[2],timediff_queue_2->dequeue, counter[2]++, get_resistor(resistor_input[2]))
+  if(timediff_queue_2->getSize() > 0) {
+    write_log(encoder_input[2],timediff_queue_2->dequeue(), counter[2]++, get_resistor(resistor_input[2]));
+  }
 
-  if(timediff_queue_3->getSize() > 0)
-    write_log(encoder_input[3],timediff_queue_3->dequeue, counter[3]++, get_resistor(resistor_input[3]))
+  if(timediff_queue_3->getSize() > 0) {
+    write_log(encoder_input[3],timediff_queue_3->dequeue(), counter[3]++, get_resistor(resistor_input[3]));
+  }
 
-  if(timediff_queue_4->getSize() > 0)
-    write_log(encoder_input[4],timediff_queue_4->dequeue, counter[4]++, get_resistor(resistor_input[4]))
+  if(timediff_queue_4->getSize() > 0) {
+    write_log(encoder_input[4],timediff_queue_4->dequeue(), counter[4]++, get_resistor(resistor_input[4]));
+  }
 }
 
 /*****************************************************************************
  * @brief wheel interrupt hanlder 1-5
  *****************************************************************************/
-void handle_wheel_1() { handle_wheel(timediff_queue_0, &prev_time_ms[0], MAX_MS_DELAY_WHEEL_0) }
-void handle_wheel_2() { handle_wheel(timediff_queue_1, &prev_time_ms[1], MAX_MS_DELAY_WHEEL_1) }
-void handle_wheel_3() { handle_wheel(timediff_queue_2, &prev_time_ms[2], MAX_MS_DELAY_WHEEL_2) }
-void handle_wheel_4() { handle_wheel(timediff_queue_3, &prev_time_ms[3], MAX_MS_DELAY_WHEEL_3) }
-void handle_wheel_5() { handle_wheel(timediff_queue_4, &prev_time_ms[4], MAX_MS_DELAY_WHEEL_4) }
+void handle_wheel_1() { handle_wheel(timediff_queue_0, &prev_time_ms[0], MAX_MS_DELAY_WHEEL_0); }
+void handle_wheel_2() { handle_wheel(timediff_queue_1, &prev_time_ms[1], MAX_MS_DELAY_WHEEL_1); }
+void handle_wheel_3() { handle_wheel(timediff_queue_2, &prev_time_ms[2], MAX_MS_DELAY_WHEEL_2); }
+void handle_wheel_4() { handle_wheel(timediff_queue_3, &prev_time_ms[3], MAX_MS_DELAY_WHEEL_3); }
+void handle_wheel_5() { handle_wheel(timediff_queue_4, &prev_time_ms[4], MAX_MS_DELAY_WHEEL_4); }
 
 /*****************************************************************************
  * @brief get_resistor
@@ -109,9 +121,10 @@ int get_resistor(const int resistor_input[]) {
 void handle_wheel(Queue * queue, unsigned long * prev_handle_time_ms, unsigned long max_delay_ms)
 {
   long timediff_ms = millis() - (* prev_handle_time_ms);
-  if( (timediff_ms > 0) && (timediff_ms < max_delay_ms) )
+  if( (timediff_ms > 0) && (timediff_ms < max_delay_ms) ) {
     queue->enqueue(timediff_ms);
-  (* prev_handle_time_ms) = millis();
+    (* prev_handle_time_ms) = millis();
+  }
 }
 
 
@@ -121,8 +134,11 @@ void handle_wheel(Queue * queue, unsigned long * prev_handle_time_ms, unsigned l
 void write_log(int wheel, long t, long count, int res) {
   // write data in log file
   // [Wheel Number];[Timediff in ms];[counter];[Resistor Value]
-  Serial.print(wheel);       Serial.print(";");
-  Serial.print(t);  Serial.print(";");
-  Serial.print(count);     Serial.print(";");
+  Serial.print(wheel);
+  Serial.print(";");
+  Serial.print(t);
+  Serial.print(";");
+  Serial.print(count);
+  Serial.print(";");
   Serial.println(res);
 }
